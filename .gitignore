@@ -1,0 +1,23 @@
+# Output directories
+SP-Readiness-Reports/
+
+# Cache directories
+.npm-cache/
+node_modules/
+
+# Checkpoint and incremental files
+scan_checkpoint_*.json
+scan_issues_*.jsonl
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PowerShell
+*.psm1.bak
