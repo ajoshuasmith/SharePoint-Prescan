@@ -66,12 +66,34 @@ Write-Host ""
 $interactive = $false
 $useTui = $false
 
-if ($Tui) {
-    $useTui = $true
+if (-not $Path -and -not $NoPrompt) {
     $interactive = $true
-} elseif (-not $Path -and -not $NoPrompt) {
     $useTui = $true
-    $interactive = $true
+
+    Write-Host "Interactive setup" -ForegroundColor Cyan
+    Write-Host ""
+
+    while ($true) {
+        $Path = Read-Host "Path to scan"
+        if (-not $Path) {
+            Write-Host "Path is required." -ForegroundColor Yellow
+            continue
+        }
+        if (-not (Test-Path $Path)) {
+            Write-Host "Path not found: $Path" -ForegroundColor Yellow
+            continue
+        }
+        break
+    }
+
+    $Destination = Read-Host "SharePoint destination URL (optional)"
+
+    $outputInput = Read-Host "Output folder (default: $Output)"
+    if ($outputInput) {
+        $Output = $outputInput
+    }
+} elseif ($Tui) {
+    $useTui = $true
 }
 
 # If no path provided, show usage
