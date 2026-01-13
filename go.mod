@@ -1,6 +1,6 @@
 module github.com/ajoshuasmith/sharepoint-prescan
 
-go 1.24.7
+go 1.21
 
 require (
 	github.com/charmbracelet/bubbles v0.21.0
