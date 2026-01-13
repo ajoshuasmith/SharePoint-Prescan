@@ -16,7 +16,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.21.x"
+          go-version: "1.24.x"
 
       - name: Build Windows binary
         run: GOOS=windows GOARCH=amd64 go build -o spready-windows-amd64.exe ./cmd/spready
