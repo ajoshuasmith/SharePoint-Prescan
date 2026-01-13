@@ -24,7 +24,35 @@ A high-performance CLI tool for MSPs to assess file system readiness before Shar
 
 ## 🚀 Quick Start
 
-### Download Pre-built Binary
+### One-Line Install & Run (Recommended)
+
+No installation required - just download and run:
+
+**Windows (PowerShell):**
+```powershell
+# Interactive - shows usage
+irm https://raw.githubusercontent.com/ajoshuasmith/SharePoint-Prescan/main/install.ps1 | iex
+
+# With parameters
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/ajoshuasmith/SharePoint-Prescan/main/install.ps1))) -Path "D:\Data" -Destination "https://contoso.sharepoint.com/sites/IT/Documents"
+```
+
+**Linux/macOS (bash):**
+```bash
+# Interactive - shows usage
+curl -sSL https://raw.githubusercontent.com/ajoshuasmith/SharePoint-Prescan/main/install.sh | bash
+
+# With parameters
+curl -sSL https://raw.githubusercontent.com/ajoshuasmith/SharePoint-Prescan/main/install.sh | bash -s -- --path /data/shares --destination "https://contoso.sharepoint.com/sites/IT/Documents"
+```
+
+The script automatically:
+- ✅ Detects your OS and architecture
+- ✅ Downloads the correct binary
+- ✅ Caches it in temp directory for reuse
+- ✅ Runs the scan with your parameters
+
+### Manual Download (Alternative)
 
 **Linux:**
 ```bash
