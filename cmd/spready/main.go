@@ -10,12 +10,14 @@ import (
 	"syscall"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/ajoshuasmith/sharepoint-prescan/internal/config"
 	"github.com/ajoshuasmith/sharepoint-prescan/internal/models"
 	"github.com/ajoshuasmith/sharepoint-prescan/internal/reporter"
 	"github.com/ajoshuasmith/sharepoint-prescan/internal/scanner"
 	"github.com/ajoshuasmith/sharepoint-prescan/internal/ui"
 	"github.com/ajoshuasmith/sharepoint-prescan/internal/validator"
+	"github.com/mattn/go-isatty"
 )
 
 var (
@@ -34,6 +36,7 @@ func main() {
 	maxItems := flag.Int64("max-items", 0, "Maximum items to scan (0 = unlimited)")
 	noBanner := flag.Bool("no-banner", false, "Suppress banner display")
 	noProgress := flag.Bool("no-progress", false, "Suppress progress display")
+	useTUIFlag := flag.Bool("tui", false, "Run interactive TUI")
 	showVersion := flag.Bool("version", false, "Show version and exit")
 
 	flag.Parse()
@@ -45,28 +48,61 @@ func main() {
 		os.Exit(0)
 	}
 
+	pathValue := *scanPath
+	destinationValue := *destinationURL
+	outputValue := *outputDir
+	useTUI := *useTUIFlag
+
+	if pathValue == "" {
+		isTerminal := isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd())
+		if !isTerminal {
+			fmt.Println("Error: -path is required")
+			flag.Usage()
+			os.Exit(1)
+		}
+
+		configResult, err := ui.RunConfigTUI("", destinationValue, outputValue)
+		if err != nil {
+			ui.ShowError("Failed to start interactive setup", err)
+			os.Exit(1)
+		}
+		if configResult.Canceled {
+			ui.ShowInfo("Scan canceled by user")
+			os.Exit(1)
+		}
+
+		pathValue = configResult.Path
+		if configResult.Destination != "" {
+			destinationValue = configResult.Destination
+		}
+		if configResult.Output != "" {
+			outputValue = configResult.Output
+		}
+		useTUI = true
+	}
+
 	// Validate required flags
-	if *scanPath == "" {
+	if pathValue == "" {
 		fmt.Println("Error: -path is required")
 		flag.Usage()
 		os.Exit(1)
 	}
 
 	// Validate path exists
-	if _, err := os.Stat(*scanPath); os.IsNotExist(err) {
-		ui.ShowError(fmt.Sprintf("Path does not exist: %s", *scanPath), nil)
+	if _, err := os.Stat(pathValue); os.IsNotExist(err) {
+		ui.ShowError(fmt.Sprintf("Path does not exist: %s", pathValue), nil)
 		os.Exit(1)
 	}
 
 	// Get absolute path
-	absPath, err := filepath.Abs(*scanPath)
+	absPath, err := filepath.Abs(pathValue)
 	if err != nil {
 		ui.ShowError("Failed to resolve absolute path", err)
 		os.Exit(1)
 	}
 
 	// Show banner
-	if !*noBanner {
+	if !*noBanner && !useTUI {
 		ui.ShowStyledBanner()
 		fmt.Printf("\n")
 	}
@@ -77,7 +113,7 @@ func main() {
 	scnr := scanner.NewScanner(absPath, cfg.Settings.DefaultExcludeFolders, *maxItems)
 
 	// Create validator
-	v := validator.NewValidator(cfg, *destinationURL, cfg.Settings.DefaultChecks)
+	v := validator.NewValidator(cfg, destinationValue, cfg.Settings.DefaultChecks)
 
 	// Setup context with cancellation
 	ctx, cancel := context.WithCancel(context.Background())
@@ -91,6 +127,24 @@ func main() {
 		fmt.Println("\n\n⚠️  Scan interrupted by user. Generating partial results...")
 		cancel()
 	}()
+
+	var (
+		program     *tea.Program
+		programDone chan struct{}
+	)
+
+	if useTUI {
+		program = tea.NewProgram(ui.NewScanModel(absPath, destinationValue), tea.WithAltScreen())
+		programDone = make(chan struct{})
+		go func() {
+			_, _ = program.Run()
+			close(programDone)
+		}()
+		go func() {
+			<-programDone
+			cancel()
+		}()
+	}
 
 	// Start scan
 	startTime := time.Now()
@@ -142,19 +196,31 @@ func main() {
 			}
 
 		case <-progressTicker.C:
-			if !*noProgress && lastProgress != nil {
-				ui.ShowStyledProgress(lastProgress, startTime)
+			if lastProgress != nil {
+				if useTUI && program != nil {
+					_ = program.Send(ui.ProgressMsg(lastProgress))
+				} else if !*noProgress {
+					ui.ShowStyledProgress(lastProgress, startTime)
+				}
 			}
 
 		case err := <-errChan:
 			if err != nil && err != context.Canceled {
-				ui.ShowError("Scan error", err)
+				if useTUI && program != nil {
+					_ = program.Send(ui.ErrorMsg(err))
+				} else {
+					ui.ShowError("Scan error", err)
+				}
+				cancel()
 			}
 		}
 	}
 
 	// Clear progress display
-	if !*noProgress {
+	if useTUI && program != nil {
+		_ = program.Send(ui.DoneMsg{})
+		<-programDone
+	} else if !*noProgress {
 		ui.ClearStyledProgress()
 	}
 
@@ -176,7 +242,7 @@ func main() {
 	// Create scan result
 	result := &models.ScanResult{
 		ScanPath:       absPath,
-		DestinationURL: *destinationURL,
+		DestinationURL: destinationValue,
 		StartTime:      startTime,
 		EndTime:        endTime,
 		Duration:       duration,
@@ -197,12 +263,12 @@ func main() {
 		fmt.Println("\nGenerating reports...")
 
 		// Ensure output directory exists
-		if err := os.MkdirAll(*outputDir, 0755); err != nil {
+		if err := os.MkdirAll(outputValue, 0755); err != nil {
 			ui.ShowError("Failed to create output directory", err)
 			os.Exit(1)
 		}
 
-		rep := reporter.NewReporter(*outputDir)
+		rep := reporter.NewReporter(outputValue)
 
 		if *outputJSON {
 			if err := rep.GenerateJSON(result, ""); err != nil {

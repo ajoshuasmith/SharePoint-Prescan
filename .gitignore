@@ -23,7 +23,8 @@ Thumbs.db
 *.psm1.bak
 
 # Go build artifacts
-spready
+/spready
+/spready.exe
 dist/
 
 # Go reports

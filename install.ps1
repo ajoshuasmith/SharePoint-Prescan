@@ -5,7 +5,10 @@ param(
     [string]$Path,
     [string]$Destination,
     [string]$Output = ".",
-    [switch]$SkipDownload
+    [switch]$SkipDownload,
+    [switch]$Pause,
+    [switch]$NoPrompt,
+    [switch]$Tui
 )
 
 $ErrorActionPreference = "Stop"
@@ -60,8 +63,19 @@ if ($os -ne "windows") {
 
 Write-Host ""
 
+$interactive = $false
+$useTui = $false
+
+if ($Tui) {
+    $useTui = $true
+    $interactive = $true
+} elseif (-not $Path -and -not $NoPrompt) {
+    $useTui = $true
+    $interactive = $true
+}
+
 # If no path provided, show usage
-if (-not $Path) {
+if (-not $Path -and -not $useTui) {
     Write-Host "Usage Examples:" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  # Interactive download and run:" -ForegroundColor Gray
@@ -82,7 +96,9 @@ if (-not $Path) {
 }
 
 # Build arguments
-$args = @("--path", $Path)
+$args = @()
+if ($useTui) { $args += @("--tui") }
+if ($Path) { $args += @("--path", $Path) }
 if ($Destination) { $args += @("--destination", $Destination) }
 if ($Output -ne ".") { $args += @("--output", $Output) }
 
@@ -106,5 +122,9 @@ Write-Host ""
 Write-Host "Binary location: $localPath" -ForegroundColor Gray
 Write-Host "To run again: $localPath --path `"<path>`"" -ForegroundColor Gray
 Write-Host ""
+
+if ($Pause -or $interactive) {
+    Read-Host "Press Enter to close"
+}
 
 exit $exitCode

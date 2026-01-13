@@ -34,6 +34,18 @@ Provide `-Destination` with the target document library URL from the SharePoint 
 
 ## Usage
 
+Interactive setup (TUI):
+
+```powershell
+spready.exe
+```
+
+Or force the TUI:
+
+```powershell
+spready.exe --tui
+```
+
 ```powershell
 spready.exe --path "D:\Shares" --destination "https://contoso.sharepoint.com/sites/IT/Shared Documents" --output "C:\Reports"
 ```
