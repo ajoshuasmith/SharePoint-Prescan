@@ -349,24 +349,24 @@ func renderStatsBox(result *models.ScanResult) string {
 	b.WriteString("\n\n")
 
 	// Path
-	b.WriteString(statLabelStyle.Render("📁 Path:") + "        " + lipgloss.NewStyle().Foreground(textColor).Render(result.ScanPath) + "\n")
+	b.WriteString(statLabelStyle.Render("Path:") + "         " + lipgloss.NewStyle().Foreground(textColor).Render(result.ScanPath) + "\n")
 
 	// Duration
-	b.WriteString(statLabelStyle.Render("⏱️  Duration:") + "    " + statValueStyle.Render(formatDuration(result.Duration)) + "\n")
+	b.WriteString(statLabelStyle.Render("Duration:") + "     " + statValueStyle.Render(formatDuration(result.Duration)) + "\n")
 
 	// Items
 	itemsText := fmt.Sprintf("%s (%s files, %s folders)",
 		formatNumber(result.TotalItems),
 		formatNumber(result.TotalFiles),
 		formatNumber(result.TotalFolders))
-	b.WriteString(statLabelStyle.Render("📊 Items:") + "       " + lipgloss.NewStyle().Foreground(textColor).Render(itemsText) + "\n")
+	b.WriteString(statLabelStyle.Render("Items:") + "        " + lipgloss.NewStyle().Foreground(textColor).Render(itemsText) + "\n")
 
 	// Size
-	b.WriteString(statLabelStyle.Render("💾 Total Size:") + "  " + statValueStyle.Render(formatBytes(result.TotalSize)) + "\n")
+	b.WriteString(statLabelStyle.Render("Total Size:") + "   " + statValueStyle.Render(formatBytes(result.TotalSize)) + "\n")
 
 	// Rate
 	rate := float64(result.TotalItems) / result.Duration.Seconds()
-	b.WriteString(statLabelStyle.Render("⚡ Scan Rate:") + "   " + statValueStyle.Render(fmt.Sprintf("%s items/sec", formatNumber(int64(rate)))))
+	b.WriteString(statLabelStyle.Render("Scan Rate:") + "    " + statValueStyle.Render(fmt.Sprintf("%s items/sec", formatNumber(int64(rate)))))
 
 	return b.String()
 }
@@ -446,17 +446,17 @@ func renderRecommendation(result *models.ScanResult) string {
 	var style lipgloss.Style
 
 	if critical > 0 {
-		icon = "⚠️"
+		icon = "!"
 		status = "Action Required"
 		message = "Critical issues must be resolved before migration.\nReview the detailed report for remediation steps."
 		style = criticalStyle
 	} else if warning > 0 {
-		icon = "⚠️"
+		icon = "▲"
 		status = "Warnings Detected"
 		message = "Address warnings to avoid potential issues during migration.\nReview the detailed report for recommendations."
 		style = warningStyle
 	} else if result.IssuesFound > 0 {
-		icon = "ℹ️"
+		icon = "i"
 		status = "Review Recommended"
 		message = "Only informational items found.\nReview and proceed with migration planning."
 		style = infoStyle
@@ -479,23 +479,23 @@ func renderRecommendation(result *models.ScanResult) string {
 func getIssueIcon(issueType models.IssueType) string {
 	switch issueType {
 	case models.IssuePathLength:
-		return "📏"
+		return "→"
 	case models.IssueInvalidCharacters:
-		return "🚫"
+		return "×"
 	case models.IssueReservedName:
-		return "⛔"
+		return "!"
 	case models.IssueBlockedFileType:
-		return "🔒"
+		return "■"
 	case models.IssueProblematicFile:
-		return "⚠️"
+		return "▲"
 	case models.IssueFileSize:
-		return "📦"
+		return "+"
 	case models.IssueNameConflict:
-		return "⚔️"
+		return "≠"
 	case models.IssueHiddenFile:
-		return "👁️"
+		return "·"
 	case models.IssueSystemFile:
-		return "⚙️"
+		return "*"
 	default:
 		return "•"
 	}

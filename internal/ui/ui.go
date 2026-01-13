@@ -137,23 +137,23 @@ func ShowSummary(result *models.ScanResult) {
 
 // ShowError displays an error message
 func ShowError(msg string, err error) {
-	fmt.Printf("\n❌ ERROR: %s\n", msg)
+	fmt.Printf("\n[ERROR] %s\n", msg)
 	if err != nil {
-		fmt.Printf("   %v\n", err)
+		fmt.Printf("        %v\n", err)
 	}
 }
 
 // ShowWarning displays a warning message
 func ShowWarning(msg string) {
-	fmt.Printf("\n⚠️  WARNING: %s\n", msg)
+	fmt.Printf("\n[WARN]  %s\n", msg)
 }
 
 // ShowInfo displays an info message
 func ShowInfo(msg string) {
-	fmt.Printf("\nℹ️  %s\n", msg)
+	fmt.Printf("\n[INFO]  %s\n", msg)
 }
 
 // ShowSuccess displays a success message
 func ShowSuccess(msg string) {
-	fmt.Printf("\n✅ %s\n", msg)
+	fmt.Printf("\n[OK]    %s\n", msg)
 }

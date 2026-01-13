@@ -194,7 +194,7 @@ func main() {
 
 	// Generate reports
 	if *outputJSON || *outputCSV || *outputHTML {
-		fmt.Println("\n📝 Generating reports...")
+		fmt.Println("\nGenerating reports...")
 
 		// Ensure output directory exists
 		if err := os.MkdirAll(*outputDir, 0755); err != nil {
