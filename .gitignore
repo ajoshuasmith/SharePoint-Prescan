@@ -21,3 +21,16 @@ Thumbs.db
 
 # PowerShell
 *.psm1.bak
+
+# Go build artifacts
+spready
+dist/
+
+# Go reports
+sp-readiness-*.json
+sp-readiness-*.csv
+sp-readiness-*.html
+
+# Go test coverage
+coverage.out
+coverage.html

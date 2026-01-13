@@ -133,60 +133,7 @@ func ShowSummary(result *models.ScanResult) {
 	}
 }
 
-// Helper functions
-
-func formatNumber(n int64) string {
-	if n < 1000 {
-		return fmt.Sprintf("%d", n)
-	}
-
-	// Add thousand separators
-	str := fmt.Sprintf("%d", n)
-	result := ""
-	for i, c := range str {
-		if i > 0 && (len(str)-i)%3 == 0 {
-			result += ","
-		}
-		result += string(c)
-	}
-	return result
-}
-
-func formatBytes(bytes int64) string {
-	if bytes == 0 {
-		return "0 B"
-	}
-
-	const unit = 1024
-	if bytes < unit {
-		return fmt.Sprintf("%d B", bytes)
-	}
-
-	div, exp := int64(unit), 0
-	for n := bytes / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-
-	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
-}
-
-func formatDuration(d time.Duration) string {
-	if d < time.Second {
-		return fmt.Sprintf("%dms", d.Milliseconds())
-	}
-	if d < time.Minute {
-		return fmt.Sprintf("%.1fs", d.Seconds())
-	}
-	if d < time.Hour {
-		minutes := int(d.Minutes())
-		seconds := int(d.Seconds()) % 60
-		return fmt.Sprintf("%dm%ds", minutes, seconds)
-	}
-	hours := int(d.Hours())
-	minutes := int(d.Minutes()) % 60
-	return fmt.Sprintf("%dh%dm", hours, minutes)
-}
+// Helper functions moved to styled.go to avoid duplication
 
 // ShowError displays an error message
 func ShowError(msg string, err error) {

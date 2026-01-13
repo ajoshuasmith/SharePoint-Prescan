@@ -67,19 +67,12 @@ func main() {
 
 	// Show banner
 	if !*noBanner {
-		ui.ShowBanner()
-		fmt.Printf("Version %s | High-performance Go implementation\n\n", version)
+		ui.ShowStyledBanner()
+		fmt.Printf("\n")
 	}
 
 	// Initialize configuration
 	cfg := config.NewDefaultConfig()
-
-	// Create scanner
-	fmt.Printf("🔍 Initializing scanner for: %s\n", absPath)
-	if *destinationURL != "" {
-		fmt.Printf("📍 Destination: %s\n", *destinationURL)
-	}
-	fmt.Println()
 
 	scnr := scanner.NewScanner(absPath, cfg.Settings.DefaultExcludeFolders, *maxItems)
 
@@ -150,7 +143,7 @@ func main() {
 
 		case <-progressTicker.C:
 			if !*noProgress && lastProgress != nil {
-				ui.ShowProgress(lastProgress, startTime)
+				ui.ShowStyledProgress(lastProgress, startTime)
 			}
 
 		case err := <-errChan:
@@ -162,7 +155,7 @@ func main() {
 
 	// Clear progress display
 	if !*noProgress {
-		ui.ClearProgress()
+		ui.ClearStyledProgress()
 	}
 
 	// Calculate duration
@@ -197,7 +190,7 @@ func main() {
 	}
 
 	// Show summary
-	ui.ShowSummary(result)
+	ui.ShowStyledSummary(result)
 
 	// Generate reports
 	if *outputJSON || *outputCSV || *outputHTML {
