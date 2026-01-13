@@ -198,7 +198,7 @@ func main() {
 		case <-progressTicker.C:
 			if lastProgress != nil {
 				if useTUI && program != nil {
-					_ = program.Send(ui.ProgressMsg(lastProgress))
+					program.Send(ui.ProgressMsg(lastProgress))
 				} else if !*noProgress {
 					ui.ShowStyledProgress(lastProgress, startTime)
 				}
@@ -207,7 +207,7 @@ func main() {
 		case err := <-errChan:
 			if err != nil && err != context.Canceled {
 				if useTUI && program != nil {
-					_ = program.Send(ui.ErrorMsg(err))
+					program.Send(ui.ErrorMsg(err))
 				} else {
 					ui.ShowError("Scan error", err)
 				}
@@ -218,7 +218,7 @@ func main() {
 
 	// Clear progress display
 	if useTUI && program != nil {
-		_ = program.Send(ui.DoneMsg{})
+		program.Send(ui.DoneMsg{})
 		<-programDone
 	} else if !*noProgress {
 		ui.ClearStyledProgress()
